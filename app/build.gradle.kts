@@ -66,6 +66,10 @@ android {
     sourceSets {
         getByName("main") {
             java.directories += "src/python/java"
+            // AGP 9 内置 Kotlin 后，java.directories 不再自动带上 Kotlin
+            // 源码，src/python/java 下的 pyLoader / PythonLoader 编译不到，
+            // 导致 compileDebugKotlin 报 Unresolved reference，必须显式加。
+            kotlin.directories += "src/python/java"
         }
     }
 
