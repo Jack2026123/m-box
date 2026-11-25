@@ -167,7 +167,7 @@ dependencies {
         implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
     }
 
-    implementation("com.google.guava:guava:33.6.0-android")
+    implementation("com.google.guava:guava:33.8.0-android")
 
     implementation(libs.nanohttpd)
     implementation(libs.cling.core)
