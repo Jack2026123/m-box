@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.whl.quickjs.android"
+    namespace = "com.github.avbox.quickjs"
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     buildFeatures {
