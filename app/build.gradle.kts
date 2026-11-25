@@ -92,7 +92,7 @@ android {
         }
         release {
             isMinifyEnabled = true
-            isShrinkResources = false
+            isShrinkResources = true
             // 签名：.key/app-release.jks 不存在时自动退化用 debug 证书（配置在 signingConfigs 里判断），
             // 所以这个仓库不带 jks 也能出 release 包，只是证书显示为 Android Debug。
             signingConfigs.findByName("release")?.let { signingConfig = it }
