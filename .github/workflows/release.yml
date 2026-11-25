@@ -113,11 +113,13 @@ jobs:
             echo "android.useAndroidX=true"
             echo "android.nonTransitiveRClass=false"
             echo "android.uniquePackageNames=false"
-            echo "android.builtInKotlin=false"
-            echo "android.newDsl=false"
-            echo "org.gradle.jvmargs=-Xmx2048m"
+            # 注意：不要写 android.builtInKotlin=false / android.newDsl=false。
+            # 项目已按 AGP 9.4 内置 Kotlin 改造（删掉了 kotlin.android 插件），
+            # 关掉内置 Kotlin 会导致 kotlin{} / android{} 脚本编译直接失败。
+            echo "org.gradle.jvmargs=-Xmx6144m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8"
             echo "org.gradle.caching=true"
             echo "org.gradle.parallel=false"
+            echo "kotlin.compiler.execution.strategy=in-process"
             echo "org.gradle.tooling.parallel=true"
             echo "RELEASE_STORE_FILE=.key/app-release.jks"
             echo "RELEASE_KEY_ALIAS=$RELEASE_KEY_ALIAS"
@@ -134,7 +136,7 @@ jobs:
           export CHAQUOPY_BUILD_PYTHON="$(which python3)"
           echo "CHAQUOPY_BUILD_PYTHON=$CHAQUOPY_BUILD_PYTHON"
           "$CHAQUOPY_BUILD_PYTHON" --version
-          ./gradlew assembleRelease --no-daemon --stacktrace
+          ./gradlew assembleRelease --no-daemon --max-workers=1 --stacktrace
 
       - name: Rename & verify APK
         id: apk
