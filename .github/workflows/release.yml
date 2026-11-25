@@ -177,7 +177,13 @@ jobs:
         run: |
           set -euo pipefail
           SRC=.github/workflows/changelog.md
-          [ -f "$SRC" ] || { echo "::error::找不到 $SRC"; exit 1; }
+          # changelog.md 已随文档清理删除，缺失时 Release 正文为空，不再报错中断。
+          if [ ! -f "$SRC" ]; then
+            echo "::warning::找不到 $SRC，Release 正文将为空"
+            : > release_body.md
+            echo "release body 行数: 0"
+            exit 0
+          fi
 
           awk -v ver="$VERSION" '
             /^##[[:space:]]/ {
