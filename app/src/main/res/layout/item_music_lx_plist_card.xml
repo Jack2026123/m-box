@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 洛雪歌单/榜单卡（升级版67 第 3 条）：与歌曲卡同口径的竖版封面（3:4、Vod.Grid 圆角）＋名称条；
+     左下角标放播放量（歌单卡有才显，榜单卡一般为空）；无喜欢钮——歌单/榜单是容器不是单曲。 -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="@drawable/ripple_music_press"
+    android:padding="2dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/plistCover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/black_20"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="3:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/Vod.Grid" />
+
+    <TextView
+        android:id="@+id/plistRemark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_vod_remark"
+        android:singleLine="true"
+        android:textColor="@color/text_remark"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/plistCover"
+        app:layout_constraintStart_toStartOf="@id/plistCover" />
+
+    <TextView
+        android:id="@+id/plistName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_vod_name"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="@id/plistCover"
+        app:layout_constraintStart_toStartOf="@id/plistCover"
+        app:layout_constraintTop_toBottomOf="@id/plistCover" />
+</androidx.constraintlayout.widget.ConstraintLayout>

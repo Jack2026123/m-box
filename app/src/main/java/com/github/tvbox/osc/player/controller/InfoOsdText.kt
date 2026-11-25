@@ -1,0 +1,304 @@
+package com.github.tvbox.osc.player.controller
+
+import android.app.Activity
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.BatteryManager
+import android.os.Build
+import android.webkit.WebView
+import androidx.media3.common.Format
+import androidx.media3.common.MimeTypes
+import androidx.media3.exoplayer.upstream.DefaultBandwidthMeter
+import com.github.tvbox.osc.R
+import com.github.tvbox.osc.player.AppPlayerView
+import com.github.tvbox.osc.player.FongmiKernelPlayer
+import com.github.tvbox.osc.player.PlayerDecodeKind
+import com.github.tvbox.osc.player.PlayerHelper
+import com.github.tvbox.osc.player.engine.AudioCodecChoice
+import com.github.tvbox.osc.player.engine.AudioDecoderLookup
+import com.github.tvbox.osc.player.state.PlayState
+import com.github.tvbox.osc.player.state.PlayerUiState
+import com.github.tvbox.osc.util.HawkConfig
+import com.github.tvbox.osc.util.KV
+import com.github.tvbox.osc.util.LOG
+import java.util.Locale
+
+internal object InfoOsdText {
+
+    fun refreshInfoOsd(
+        context: Context,
+        state: PlayerUiState,
+        videoView: AppPlayerView?,
+        activity: Activity?,
+        speed: Long,
+    ) {
+        val view = videoView
+        val kernel = view?.mediaPlayer as? FongmiKernelPlayer
+        val video = kernel?.selectedVideoFormat
+        val left = ArrayList<String>()
+        val right = ArrayList<String>()
+
+        left.add(context.getString(R.string.osd_title) + " " + state.title.ifEmpty { "-" })
+        left.add(context.getString(R.string.osd_user_agent) + " " + (view?.currentUserAgent ?: "-"))
+        // r489：推送信息 —— 播的时候能看到推过去的 Referer / Cookie（与视频里弹框一致）。
+        left.add(context.getString(R.string.osd_referer) + " " + (view?.currentReferer?.ifEmpty { null } ?: "-"))
+        left.add(context.getString(R.string.osd_cookie) + " " + (view?.currentCookie?.ifEmpty { null } ?: "-"))
+        left.add(context.getString(R.string.osd_play_url) + " " + (view?.currentUrl ?: "-"))
+        left.add(context.getString(R.string.osd_video) + " " + videoText(video, kernel))
+        left.add(context.getString(R.string.osd_decoder) + " " + decoderText(kernel))
+        left.add(context.getString(R.string.osd_audio) + " " + if (kernel?.isMpvKernel() == true) mpvAudioText(kernel) else audioText(context, kernel))
+
+        kernel?.sampleFrameRate()
+        val throughput = runCatching {
+            DefaultBandwidthMeter.getSingletonInstance(context).bitrateEstimate
+        }.getOrDefault(0L)
+        left.add(
+            context.getString(R.string.osd_network) + " " + PlayerHelper.getDisplaySpeed(speed, true)
+                + " · " + bitrateText(throughput) + marginText(throughput, video)
+        )
+        left.add(
+            context.getString(R.string.osd_playback) + " " + playbackText(
+                context, state,
+                kernel?.droppedFrames() ?: 0L,
+                kernel?.rebufferCount() ?: 0,
+            )
+        )
+        val footer = context.getString(R.string.osd_config) + " " + configText(context, view, kernel)
+        left.add(
+            context.getString(R.string.osd_conclusion) + " "
+                + context.getString(if (state.playState == PlayState.ERROR) R.string.osd_abnormal else R.string.osd_normal)
+        )
+
+        right.add(
+            context.getString(R.string.osd_device) + " " + Build.MODEL + " / " + Build.DEVICE + " / "
+                + (Build.SUPPORTED_ABIS.firstOrNull() ?: "-")
+        )
+        right.add(context.getString(R.string.osd_system) + " Android " + Build.VERSION.RELEASE + " / SDK " + Build.VERSION.SDK_INT)
+        right.add(context.getString(R.string.osd_chip) + " " + chipText())
+        right.add(context.getString(R.string.osd_screen) + " " + screenText(context, activity))
+        right.add("WebView " + webViewText())
+        right.add(context.getString(R.string.osd_network_env) + " " + networkEnvText(context))
+
+        state.infoOsdLeft = left
+        state.infoOsdRight = right
+        state.infoOsdFooter = footer
+    }
+
+    private fun videoText(format: Format?, kernel: FongmiKernelPlayer?): String {
+        if (format == null) return "-"
+        val parts = ArrayList<String>()
+        parts.add(videoCodecName(format))
+        if (format.width > 0 && format.height > 0) parts.add(format.width.toString() + "x" + format.height)
+        val fps = frameRateText(format, kernel)
+        if (fps.isNotEmpty()) parts.add(fps)
+        val bitrate = bitrateText(format.bitrate.toLong())
+        if (bitrate.isNotEmpty()) parts.add(bitrate)
+        val codecs = format.codecs
+        if (!codecs.isNullOrEmpty()) parts.add(codecs)
+        return parts.joinToString(" · ")
+    }
+
+    private fun frameRateText(format: Format, kernel: FongmiKernelPlayer?): String {
+        if (format.frameRate > 0f) return format.frameRate.toInt().toString() + "fps"
+        val measured = kernel?.measuredFrameRate() ?: 0f
+        if (measured <= 0f) return ""
+        return String.format(Locale.US, "%.1ffps", measured)
+    }
+
+    private fun videoCodecName(format: Format): String = when (format.sampleMimeType) {
+        MimeTypes.VIDEO_H264 -> "H.264"
+        MimeTypes.VIDEO_H265 -> "H.265"
+        MimeTypes.VIDEO_AV1 -> "AV1"
+        MimeTypes.VIDEO_VP9 -> "VP9"
+        MimeTypes.VIDEO_MP4V -> "MPEG-4"
+        else -> format.sampleMimeType?.substringAfter('/')?.uppercase(Locale.US) ?: "-"
+    }
+
+    private fun decoderText(kernel: FongmiKernelPlayer?): String {
+        kernel?.videoDecoderName()?.takeIf { it.isNotEmpty() }?.let { return it }
+        if (kernel?.isMpvKernel() != true) return "-"
+        val parts = ArrayList<String>()
+        val hwdec = kernel.hwdecCurrent()
+        if (hwdec.isNotEmpty()) parts.add(hwdec)
+        val codec = kernel.videoCodecName()
+        if (codec.isNotEmpty() && codec != hwdec) parts.add(codec)
+        return if (parts.isEmpty()) "-" else parts.joinToString(" · ")
+    }
+
+    private fun mpvAudioText(kernel: FongmiKernelPlayer): String {
+        val format = kernel.selectedAudioFormat
+        val codecProp = kernel.audioCodecName()
+        if (format == null && codecProp.isEmpty()) return "-"
+        val parts = ArrayList<String>()
+        val codecs = format?.codecs
+        parts.add(
+            when {
+                codecProp.isNotEmpty() -> codecProp
+                !codecs.isNullOrEmpty() -> codecs
+                else -> format?.sampleMimeType?.substringAfter('/')?.uppercase(Locale.US) ?: "-"
+            }
+        )
+        if (format != null && format.channelCount > 0) parts.add(format.channelCount.toString() + ".0")
+        if (format != null && format.sampleRate > 0) {
+            val khz = format.sampleRate / 1000f
+            parts.add((if (khz % 1f == 0f) khz.toInt().toString() else String.format(Locale.US, "%.1f", khz)) + "kHz")
+        }
+        return parts.joinToString(" · ")
+    }
+
+    private fun audioText(context: Context, kernel: FongmiKernelPlayer?): String {
+        val format = kernel?.selectedAudioFormat
+        if (format == null) return "-"
+        val parts = ArrayList<String>()
+        val codecs = format.codecs
+        parts.add(if (!codecs.isNullOrEmpty()) codecs else format.sampleMimeType?.substringAfter('/')?.uppercase(Locale.US) ?: "-")
+        val probe = probeAudioCodec(format, kernel)
+        if (probe != null) {
+            parts.add(decodeKindText(context, PlayerHelper.decodeKindOf(probe.choice.name, probe.choice.hardwareAccelerated, probe.choice.softwareOnly)))
+            parts.add(probe.choice.name)
+        }
+        if (format.channelCount > 0) parts.add(format.channelCount.toString() + ".0")
+        if (format.sampleRate > 0) {
+            val khz = format.sampleRate / 1000f
+            parts.add((if (khz % 1f == 0f) khz.toInt().toString() else String.format(Locale.US, "%.1f", khz)) + "kHz")
+        }
+        logAudioCodec(format, kernel)
+        return parts.joinToString(" · ")
+    }
+
+    private fun decodeKindText(context: Context, kind: PlayerDecodeKind): String = when (kind) {
+        PlayerDecodeKind.HARDWARE -> context.getString(R.string.player_decode_hard)
+        PlayerDecodeKind.SOFTWARE -> context.getString(R.string.player_decode_soft)
+        PlayerDecodeKind.UNKNOWN -> "-"
+    }
+
+    private class AudioProbe(val choice: AudioCodecChoice, val source: String)
+
+    private var lastLoggedAudioKey: String? = null
+
+    private fun probeAudioCodec(format: Format, kernel: FongmiKernelPlayer?): AudioProbe? {
+        val live = kernel?.audioCodecChoice()
+        if (live != null) return AudioProbe(live, "live")
+        val guess = AudioDecoderLookup.guessChoice(format) ?: return null
+        return AudioProbe(guess.first, if (guess.second) "extension" else "predicted")
+    }
+
+    private fun logAudioCodec(format: Format, kernel: FongmiKernelPlayer?) {
+        val probe = probeAudioCodec(format, kernel) ?: return
+        val choice = probe.choice
+        val key = probe.source + "|" + choice.name + "|" + choice.hardwareAccelerated + "|" + choice.softwareOnly
+        if (key == lastLoggedAudioKey) return
+        lastLoggedAudioKey = key
+        LOG.i(
+            "echo-player-audio-codec: source=${probe.source} mime=${format.sampleMimeType} name=${choice.name}" +
+                " hw=${choice.hardwareAccelerated} swOnly=${choice.softwareOnly}" +
+                " kind=${PlayerHelper.decodeKindOf(choice.name, choice.hardwareAccelerated, choice.softwareOnly)}" +
+                " renderer=${kernel?.audioRendererName() ?: "-"}",
+        )
+    }
+
+    private fun bitrateText(bps: Long): String {
+        if (bps <= 0) return ""
+        return String.format(Locale.US, "%.1fMbps", bps / 1000000f)
+    }
+
+    private fun marginText(throughput: Long, format: Format?): String {
+        val bitrate = format?.bitrate ?: 0
+        if (throughput <= 0 || bitrate <= 0) return ""
+        return " · x" + String.format(Locale.US, "%.2f", throughput.toFloat() / bitrate)
+    }
+
+    private fun playbackText(context: Context, state: PlayerUiState, droppedFrames: Long, rebufferCount: Int): String {
+        val parts = ArrayList<String>()
+        parts.add(context.getString(playStateRes(state)))
+        parts.add(timeText(state.position) + " / " + timeText(state.duration))
+        parts.add(context.getString(R.string.osd_dropped_frames, droppedFrames))
+        parts.add(context.getString(R.string.osd_rebuffer, rebufferCount))
+        return parts.joinToString(" · ")
+    }
+
+    private fun playStateRes(state: PlayerUiState): Int = when (state.playState) {
+        PlayState.BUFFERING -> R.string.osd_state_buffering
+        PlayState.PLAYING -> R.string.osd_state_playing
+        PlayState.PAUSED -> R.string.osd_state_paused
+        PlayState.COMPLETED -> R.string.osd_state_ended
+        PlayState.ERROR -> R.string.osd_abnormal
+        else -> R.string.osd_state_ready
+    }
+
+    private fun timeText(millis: Int): String {
+        if (millis <= 0) return "00:00"
+        val seconds = millis / 1000
+        return String.format(Locale.US, "%02d:%02d", seconds / 60, seconds % 60)
+    }
+
+    private fun configText(context: Context, videoView: AppPlayerView?, kernel: FongmiKernelPlayer?): String {
+        val parts = ArrayList<String>()
+        parts.add(PlayerHelper.getPlayerName(if (kernel?.isMpvKernel() == true) PlayerHelper.TYPE_MPV else 2))
+        parts.add(decodeKindText(context, kernel?.videoDecodeKind() ?: PlayerDecodeKind.UNKNOWN))
+        parts.add(if (videoView?.renderIsSurface == true) "Surface" else "Texture")
+        parts.add(context.getString(R.string.osd_tunnel) + " " + onOffText(context, kernel?.isTunnelingEnabled == true))
+        parts.add(context.getString(R.string.osd_frame_rate_match) + " " + onOffText(context, false))
+        parts.add(context.getString(R.string.osd_preload) + " " + onOffText(context, KV.get(HawkConfig.PRELOAD_NEXT_EPISODE, false) == true))
+        parts.add(context.getString(R.string.osd_cache) + " " + onOffText(context, KV.get(HawkConfig.PLAY_CACHE, false) == true))
+        return parts.joinToString(" · ")
+    }
+
+    private fun onOffText(context: Context, on: Boolean): String = context.getString(if (on) R.string.common_on else R.string.common_off)
+
+    private fun chipText(): String {
+        val parts = ArrayList<String>()
+        if (Build.VERSION.SDK_INT >= 31) {
+            Build.SOC_MODEL?.takeIf { it.isNotBlank() }?.let { parts.add(it) }
+        }
+        Build.HARDWARE?.takeIf { it.isNotBlank() }?.let { parts.add(it) }
+        Build.BOARD?.takeIf { it.isNotBlank() }?.let { parts.add(it) }
+        return if (parts.isEmpty()) "-" else parts.joinToString(" / ")
+    }
+
+    @Suppress("DEPRECATION")
+    private fun screenText(context: Context, activity: Activity?): String {
+        val display = activity?.windowManager?.defaultDisplay ?: return "-"
+        val parts = ArrayList<String>()
+        val mode = display?.mode
+        if (mode != null) {
+            parts.add(mode.physicalWidth.toString() + "x" + mode.physicalHeight)
+        } else {
+            parts.add(context.resources.displayMetrics.widthPixels.toString() + "x" + context.resources.displayMetrics.heightPixels)
+        }
+        parts.add(String.format(Locale.US, "%.0fHz", display.refreshRate))
+        return parts.joinToString(" · ")
+    }
+
+    private fun webViewText(): String {
+        if (Build.VERSION.SDK_INT < 26) return "-"
+        return WebView.getCurrentWebViewPackage()?.versionName ?: "-"
+    }
+
+    private fun networkEnvText(context: Context): String {
+        val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return "-"
+        val network = manager.activeNetwork ?: return "offline"
+        val capabilities = manager.getNetworkCapabilities(network) ?: return "offline"
+        val type = when {
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WiFi"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Cellular"
+            capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
+            else -> "Other"
+        }
+        val validated = if (capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) "validated" else "unvalidated"
+        return type + " / " + validated + (if (manager.isActiveNetworkMetered) " metered" else " unmetered")
+    }
+
+    fun readBattery(context: Context, state: PlayerUiState) {
+        runCatching {
+            val bm = context.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager
+                ?: return
+            val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            state.batteryPercent = if (level in 0..100) level else -1
+            val status = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
+            state.batteryCharging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
+                    status == BatteryManager.BATTERY_STATUS_FULL
+        }
+    }
+}

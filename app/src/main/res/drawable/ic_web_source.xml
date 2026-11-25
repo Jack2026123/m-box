@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 3.38 网页图标：照用户任务栏那个圆地球画的描边地球（圆 + 赤道线 + 竖椭圆经线 + 上下两条纬线弧）；坐标是正的，不套 translateY group（之前那层位移把图推出画布就是空白的原因）。 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="960"
+    android:viewportHeight="960">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="70"
+        android:pathData="M80,480 a400,400 0 1,0 800,0 a400,400 0 1,0 -800,0" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="70"
+        android:pathData="M80,480 L880,480" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="70"
+        android:pathData="M480,80 C300,240 300,720 480,880 C660,720 660,240 480,80 Z" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="70"
+        android:pathData="M140,300 Q480,400 820,300" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeWidth="70"
+        android:pathData="M140,660 Q480,560 820,660" />
+</vector>

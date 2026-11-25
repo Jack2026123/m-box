@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 音乐分类页的单页：竖版卡片宫格（3 列）+ 本页空提示；滚动到底由页面自己续加载下一页。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/pageGrid"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="4dp" />
+
+    <TextView
+        android:id="@+id/pageEmpty"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:padding="16dp"
+        android:textColor="#FFF0E8DA"
+        android:textSize="14sp"
+        android:visibility="gone" />
+</FrameLayout>

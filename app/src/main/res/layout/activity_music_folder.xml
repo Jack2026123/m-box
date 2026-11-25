@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 音乐目录下钻页（升级版51 第 6 条）：分类/推荐里的目录类条目（一级目录、歌手目录等）点开后进这里，
+     列出下一级条目；条目可播放就进播放器、还是目录就继续下钻。样式与分类页一致：竖版卡片宫格、无深色底板；
+     底部通栏迷你播放条，无底栏胶囊，离开靠返回。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/folderTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#FFFFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/folderGrid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false" />
+
+        <TextView
+            android:id="@+id/emptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textColor="#FFF0E8DA"
+            android:textSize="14sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/miniPlayer"
+        layout="@layout/layout_music_mini_player" />
+</LinearLayout>

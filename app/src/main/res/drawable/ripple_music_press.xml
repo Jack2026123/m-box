@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 音乐行/卡按压反馈（升级版77 乙段 (a) 层）：前景 ripple，颜色走主题
+     colorControlHighlight（与主题协调的按压高亮），圆角 mask 与行高亮底同式 12dp。
+     只作 foreground 使用：不吞点击、不改背景与行几何。 -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="?attr/colorControlHighlight">
+    <item android:id="@android:id/mask">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <solid android:color="#FFFFFFFF" />
+        </shape>
+    </item>
+</ripple>

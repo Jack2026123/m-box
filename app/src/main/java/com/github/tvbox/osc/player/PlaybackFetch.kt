@@ -1,0 +1,270 @@
+package com.github.tvbox.osc.player
+
+import android.text.TextUtils
+import android.util.Base64
+import com.github.tvbox.osc.R
+import com.github.tvbox.osc.api.ApiConfig
+import com.github.tvbox.osc.api.DanmakuApi
+import com.github.tvbox.osc.io.FileUtils
+import com.github.tvbox.osc.sourcedata.SourceViewModel
+import com.github.tvbox.osc.util.FloatLog
+import com.github.tvbox.osc.util.LOG
+import java.nio.charset.StandardCharsets
+import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+
+class PlaybackFetch(private val controller: PlaybackController) {
+
+    private var sourceViewModel: SourceViewModel? = null
+    private var collectJob: Job? = null
+    private var probeScope: CoroutineScope? = null
+    private var probeJob: Job? = null
+
+    fun init() {
+        val vm = SourceViewModel()
+        sourceViewModel = vm
+        collectJob = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).launch {
+            vm.playResult.flow.collect { info -> handlePlayResult(info) }
+        }
+    }
+
+    fun release() {
+        collectJob?.cancel()
+        collectJob = null
+        probeJob?.cancel()
+        probeJob = null
+    }
+
+    /**
+     * Content-type probe for ambiguous direct links (see
+     * ReaderContentClassifier.shouldProbe). Runs off the play-result path;
+     * a stale result is dropped, reader content diverts, and anything else
+     * re-enters [handlePlayResult] with the probe marked done so the video
+     * pipeline continues exactly as before.
+     */
+    private fun launchReaderProbe(info: JSONObject) {
+        val scope = probeScope
+            ?: CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).also { probeScope = it }
+        probeJob?.cancel()
+        LOG.i("echo-reader probe: ambiguous direct link, checking content type")
+        probeJob = scope.launch {
+            val probed = com.github.tvbox.osc.reader.ReaderContentClassifier.probe(info)
+            if (controller.isStalePlayResult(info)) {
+                LOG.i("echo-reader probe dropped: result is stale")
+                return@launch
+            }
+            val router = controller.readerRouter()
+            val currentVod = controller.vod()
+            if (probed != null && router != null && currentVod != null &&
+                router.openReader(currentVod, probed, info)
+            ) {
+                LOG.i("echo-reader divert by probe: " + probed.javaClass.simpleName)
+                return@launch
+            }
+            LOG.i("echo-reader probe: not reader content, continue video pipeline")
+            handlePlayResult(info, probed = true)
+        }
+    }
+
+    fun deliver(info: JSONObject?) {
+        if (collectJob?.isActive != true) return
+        handlePlayResult(info)
+    }
+
+    fun sourceViewModel(): SourceViewModel? = sourceViewModel
+
+    fun cancelPlayRequest() {
+        sourceViewModel?.cancelPlayRequest()
+    }
+
+    private fun handlePlayResult(info: JSONObject?, probed: Boolean = false) {
+        val prepareOnly = controller.isCastPrepareOnly()
+        if (info == null) {
+            if (!prepareOnly) controller.publishQuality(null)
+        }
+        if (info != null) {
+            try {
+                if (controller.isStalePlayResult(info)) {
+                    LOG.i("echo-ignore stale play result")
+                    return
+                }
+                FloatLog.append("app", null, "play result accepted flag=" + info.optString("flag", "") + " proKey=" + info.optString("proKey", ""))
+                val view = controller.viewBridge()
+                if (view != null && controller.isSwitchStopPending()) {
+                    LOG.i("echo-ignore play result while source switching")
+                    return
+                }
+                controller.cancelResolvePlayUrlTimeout()
+                if (!prepareOnly) {
+                    val router = controller.readerRouter()
+                    val currentVod = controller.vod()
+                    if (router != null && currentVod != null) {
+                        val readerContent = com.github.tvbox.osc.reader.ReaderContentClassifier.classify(info)
+                        if (readerContent != null && router.openReader(currentVod, readerContent, info)) {
+                            LOG.i("echo-reader divert: " + readerContent.javaClass.simpleName)
+                            return
+                        }
+                        if (readerContent == null && !probed &&
+                            com.github.tvbox.osc.reader.ReaderContentClassifier.shouldProbe(info)
+                        ) {
+                            launchReaderProbe(info)
+                            return
+                        }
+                    } else if (router == null) {
+                        LOG.i("echo-reader router missing: readers unavailable for this result")
+                    }
+                }
+                if (!prepareOnly) controller.publishQuality(info)
+                controller.setWebPlayUrl(null)
+                controller.setProgressKey(info.optString("proKey", null))
+                val parse = info.optString("parse", "1") == "1"
+                val jx = info.optString("jx", "0") == "1"
+                controller.setPlaySubtitle(info.optString("subt", ""))
+                controller.setPlayLyric(info.optString("lyric", ""))
+                controller.setLyricCacheKey(info.optString("lyricKey", null))
+                if (TextUtils.isEmpty(controller.lyricCacheKey()) && !TextUtils.isEmpty(controller.progressKey())) {
+                    controller.setLyricCacheKey(controller.progressKey() + "-lyric")
+                }
+                val lyrics = info.optJSONArray("lyrics")
+                if (lyrics != null && lyrics.length() > 0) {
+                    controller.setPlayLyric(getSubtitleUrl(lyrics.optJSONObject(0)))
+                }
+                val subtitles = info.optJSONArray("subs")
+                if (subtitles != null) {
+                    for (i in 0 until subtitles.length()) {
+                        val obj = subtitles.optJSONObject(i) ?: continue
+                        val url = getSubtitleUrl(obj)
+                        val name = obj.optString("name", "")
+                        if (isLyricSubtitle(name)) {
+                            if (TextUtils.isEmpty(controller.playLyric())) controller.setPlayLyric(url)
+                        } else if (TextUtils.isEmpty(controller.playSubtitle())) {
+                            controller.setPlaySubtitle(url)
+                        }
+                    }
+                }
+                controller.setSubtitleCacheKey(info.optString("subtKey", null))
+                val lyricPick = controller.playLyric()
+                LOG.i(
+                    "echo-lyric pick: " + if (lyricPick.isNullOrEmpty()) {
+                        "none"
+                    } else if (lyricPick.startsWith("data:")) {
+                        "inline len=" + lyricPick.length
+                    } else {
+                        lyricPick
+                    }
+                )
+                val playUrl = info.optString("playUrl", "")
+                val flag = info.optString("flag")
+                val rawUrl = info.opt("url")
+                var url = if (rawUrl is JSONArray) rawUrl.toString() else rawUrl?.toString() ?: "null"
+                if (url.startsWith("[") && view != null) {
+                    url = view.firstUrlByArray(url)
+                }
+                var artwork = info.optString("artwork", "")
+                if (TextUtils.isEmpty(artwork)) artwork = info.optString("cover", "")
+                val vod = controller.vod()
+                if (TextUtils.isEmpty(artwork) && !TextUtils.isEmpty(controller.playLyric()) && vod != null) {
+                    artwork = vod.pic ?: ""
+                }
+                controller.setCurrentArtwork(artwork)
+                if (view != null) view.setArtwork(artwork)
+                val msg = info.optString("msg", "")
+                if (!TextUtils.isEmpty(msg)) {
+                    controller.handleResolvePlayUrlFailed(msg)
+                    return
+                }
+                controller.setUserPickedLine(false)
+                val danmaku = info.optString("danmaku", "").trim { it <= ' ' }
+                val danmuProgressKey = controller.progressKey()
+                controller.setWebUserAgent(null)
+                controller.setWebHeaderMap(null)
+                val headers = PlaybackController.extractHeaders(info)
+                if (headers != null) {
+                    controller.setWebHeaderMap(headers)
+                    val ua = PlaybackController.headerValue(headers, "user-agent")
+                    controller.setWebUserAgent(if (ua == null) null else ua.trim { it <= ' ' })
+                }
+                if (parse || jx) {
+                    val userJxList = (playUrl.isEmpty() && (ApiConfig.get().getVipParseFlags() ?: mutableListOf()).contains(flag)) || jx
+                    controller.initParse(flag, userJxList, playUrl, url)
+                } else {
+                    if (view != null) view.showParse(false)
+                    if (view != null) controller.playUrl(playUrl + url, headers)
+                }
+                if (TextUtils.isEmpty(danmaku)) {
+                    checkDanmu("", null)
+                    searchDanmu("")
+                } else {
+                    checkDanmu(danmaku) {
+                        if (TextUtils.equals(danmuProgressKey, controller.progressKey())) {
+                            searchDanmu("")
+                        }
+                    }
+                }
+            } catch (th: Throwable) {
+                controller.handleResolvePlayUrlFailed(PlaybackController.str(R.string.player_get_info_error))
+            }
+        } else {
+            controller.handleResolvePlayUrlFailed(PlaybackController.str(R.string.player_get_info_error))
+        }
+    }
+
+    private fun getSubtitleUrl(obj: JSONObject?): String {
+        if (obj == null) return ""
+        val format = obj.optString("format", "")
+        val name = obj.optString("name", PlaybackController.str(R.string.player_menu_subtitle))
+        var ext = ".srt"
+        if ("text/x-ssa" == format) {
+            ext = ".ass"
+        } else if ("text/vtt" == format) {
+            ext = ".vtt"
+        } else if ("text/lrc" == format) {
+            ext = ".lrc"
+        }
+        val filename = name + if (name.lowercase(Locale.ROOT).endsWith(ext)) "" else ext
+        var url = obj.optString("url", "")
+        val data = obj.optString("data", "")
+        if (!TextUtils.isEmpty(data) && (TextUtils.isEmpty(url) || PlayerHelper.isLocalProxyUrl(url))) {
+            url = "data:text/plain;base64," + Base64.encodeToString(data.toByteArray(StandardCharsets.UTF_8), Base64.NO_WRAP)
+            val view = controller.viewBridge()
+            return if (view == null) url else "$url#" + view.encodeUrl(filename)
+        }
+        if (TextUtils.isEmpty(url) || FileUtils.hasExtension(url)) return url
+        val view = controller.viewBridge()
+        return if (view == null) url else "$url#" + view.encodeUrl(filename)
+    }
+
+    private fun isLyricSubtitle(name: String?): Boolean {
+        if (name.isNullOrEmpty()) return false
+        val value = name.lowercase(Locale.ROOT)
+        return value.contains("lyric") || value.contains("lrc") || name.contains("歌词") // i18n: keep
+    }
+
+    private fun searchDanmu(danmaku: String) {
+        if (!TextUtils.isEmpty(danmaku) || !DanmakuApi.canSearch(controller.sourceBean())) return
+        val vod = controller.vod() ?: return
+        val series = controller.currentSeries(vod.playFlag, vod.playIndex)
+        val key = controller.progressKey()
+        DanmakuApi.search(vod.name, if (series == null) "" else series.name, object : DanmakuApi.SearchCallback {
+            override fun onFound(url: String) {
+                if (!TextUtils.equals(key, controller.progressKey())) return
+                checkDanmu(url, null)
+            }
+
+            override fun onNotFound() {
+                if (!TextUtils.equals(key, controller.progressKey())) return
+                checkDanmu("", null)
+            }
+        })
+    }
+
+    private fun checkDanmu(danmaku: String, onFailed: Runnable?) {
+        controller.viewBridge()?.checkDanmu(danmaku, onFailed)
+    }
+}

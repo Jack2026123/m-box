@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+    <!-- 2.87 歌词浮窗：系统级悬浮窗（TYPE_APPLICATION_OVERLAY），歌词浮在别的 App 上面 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" tools:node="remove" />
+    <uses-permission android:name="android.permission.GET_TASKS" tools:node="remove" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" tools:node="remove" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
+    <application
+        android:name=".base.App"
+        android:allowBackup="true"
+        android:banner="@drawable/tv_banner"
+        android:configChanges="orientation|keyboardHidden|screenSize"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:requestLegacyExternalStorage="true"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme.NoActionBar"
+        android:usesCleartextTraffic="true">
+
+        <activity
+            android:name="com.github.avbox.osc.ComposeTestActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Material.Light.NoActionBar" />
+
+        <activity
+            android:name=".ui.activity.MainActivity"
+            android:exported="true"
+            android:theme="@style/AppTheme.Splash"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ui.activity.LivePlayActivity"
+            android:screenOrientation="behind"
+            android:supportsPictureInPicture="true"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".ui.activity.DetailActivity"
+            android:launchMode="singleTop"
+            android:screenOrientation="behind"
+            android:supportsPictureInPicture="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".ui.activity.MusicPlayerActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize" />
+        <activity
+            android:name=".reader.NovelReaderActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".reader.ComicReaderActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".reader.WebNovelReaderActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".reader.WebComicReaderActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".ui.activity.BrowserActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout|smallestScreenSize" />
+        <activity
+            android:name=".ui.activity.SearchActivity"
+            android:screenOrientation="behind"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".ui.activity.PartitionListActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.ThemeSettingsActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.WebSourceManageActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.ConfigManageActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.OpenSourceFileActivity"
+            android:exported="true"
+            android:screenOrientation="behind">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" android:mimeType="text/plain" />
+                <data android:scheme="content" android:mimeType="text/x-python" />
+                <data android:scheme="content" android:mimeType="application/octet-stream" />
+                <data android:scheme="content" android:mimeType="application/json" />
+                <data android:scheme="content" android:mimeType="application/javascript" />
+                <data android:scheme="content" android:mimeType="application/java-archive" />
+                <data android:scheme="file" android:mimeType="text/plain" />
+                <data android:scheme="file" android:mimeType="text/x-python" />
+                <data android:scheme="file" android:mimeType="application/octet-stream" />
+                <data android:scheme="file" android:mimeType="application/json" />
+                <data android:scheme="file" android:mimeType="application/javascript" />
+                <data android:scheme="file" android:mimeType="application/java-archive" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/x-python" />
+                <data android:mimeType="application/octet-stream" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="application/javascript" />
+                <data android:mimeType="application/java-archive" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.activity.ImageSearchShareActivity"
+            android:exported="true"
+            android:screenOrientation="behind">
+            <!-- 3.66 分享图片进 AVBox 识图：微信/别的 App 分享图片时 AVBox 出现在分享列表里。 -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.activity.TmdbConfigActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.ReadingSearchActivity"
+            android:screenOrientation="behind"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
+        <activity
+            android:name=".ui.activity.ReadingSourcesActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.ReadingBookActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.LegadoAudioActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.PlaySettingsActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".ui.activity.PreferenceSettingsActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".miniapp.engine.MiniAppRunActivity"
+            android:screenOrientation="behind" />
+        <activity
+            android:name=".miniapp.engine.MiniAppPlayerActivity"
+            android:screenOrientation="behind"
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout" />
+
+        <service
+            android:name=".dlna.DLNACastService"
+            android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+        <receiver
+            android:name=".receiver.SearchReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.content.movie.search.Action" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".receiver.CustomWebReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.content.movie.custom.web.Action" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".ui.page.SmartDownloadActionReceiver"
+            android:exported="false" />
+        <receiver
+            android:name=".receiver.PipActionReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="${applicationId}.pip.play" />
+                <action android:name="${applicationId}.pip.pause" />
+                <action android:name="${applicationId}.pip.next" />
+            </intent-filter>
+        </receiver>
+
+        <meta-data
+            android:name="design_width_in_dp"
+            android:value="1280" />
+        <meta-data
+            android:name="design_height_in_dp"
+            android:value="720" />
+        <service
+            android:name=".player.PlaybackService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+        <service
+            android:name="com.fongmi.android.tv.service.PlaybackService"
+            android:foregroundServiceType="mediaPlayback"
+            android:exported="false" />
+
+    </application>
+
+</manifest>

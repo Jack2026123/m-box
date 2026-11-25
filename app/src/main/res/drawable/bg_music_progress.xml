@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 迷你条顶部细进度（升级版51 第 3 条）：轨道半透明白、已播段纯白，压在页面背景上清晰可读。 -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <solid android:color="#33FFFFFF" />
+        </shape>
+    </item>
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <solid android:color="#FFFFFFFF" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

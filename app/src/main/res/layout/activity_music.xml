@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 音乐首页（经典模式）：搜索 + 站点行（含全部）+ 分类/首页推荐/我喜欢/我的歌单四个入口 + 搜索历史 + 最近播放/搜索结果 + 通栏迷你播放条。无底栏胶囊，离开靠返回。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+
+            <!-- 升级版51 第 4 条：搜索框与旁边两个按钮定为同一高度（40dp），不再高出一截。 -->
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_music_search"
+                android:gravity="center_vertical"
+                android:hint="@string/music_search_hint"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="0dp"
+                android:singleLine="true"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#B3F0E8DA"
+                android:textSize="14sp" />
+
+            <!-- 搜索/源管理按钮（升级版50 第 1/2 条）：弃旧金黄样式，与点播文字按钮同款胶囊（未选中态）。 -->
+            <TextView
+                android:id="@+id/searchBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:text="@string/music_search"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/manageBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:text="@string/music_manage"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/siteChips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/categoryBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:background="@drawable/shape_item_round"
+                android:focusable="true"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="@string/music_category"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/recommendBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:background="@drawable/shape_item_round"
+                android:focusable="true"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="@string/music_recommend"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/likesBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:background="@drawable/shape_item_round"
+                android:focusable="true"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="@string/music_my_likes"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/playlistsBtn"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:background="@drawable/shape_item_round"
+                android:focusable="true"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="@string/music_my_playlists"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/historySection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/music_history"
+                    android:textColor="#FFFFFFFF"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/historyClear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="4dp"
+                    android:text="@string/music_history_clear"
+                    android:textColor="#FFF0E8DA"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/historyChips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingTop="8dp" />
+            </HorizontalScrollView>
+        </LinearLayout>
+
+        <!-- 升级版78 戊段：搜索结果页签行（歌曲｜歌手）——钮式逐字照席位页
+             activity_music_lx.xml 的 modeSong/modeSinger，文案复用现串；默认 gone，
+             只在搜索态出现，显隐由 MusicActivity.applyResultsLayout 随两态同路管理。 -->
+        <LinearLayout
+            android:id="@+id/searchTabRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/modeSong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="@string/music_lx_mode_song"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/modeSinger"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="@string/music_lx_mode_singer"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:id="@+id/listTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/music_recent"
+                android:textColor="#FFFFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/recentMore"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="@string/music_more"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- 升级版78 丙段：resultsList 移出 ScrollView 改有界自滚（0dp＋weight=1，对齐席位页
+             activity_music_lx.xml 形态）——搜索态整表（千条级）由它自己窗口化滚动，不再被
+             ScrollView 以 wrap_content 全量展开量测而停在清单头部。首页态由 MusicActivity
+             的 applyResultsLayout 切回 wrap_content 只摆最近播放（≤5 条），其下 homeScroll
+             承接推荐区滚动；两态区块顺序与原貌一致（最近→空态→推荐标题→推荐网格）。 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/resultsList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- 升级版78 戊段：歌手页签结果列表——与 resultsList 同位同形态有界自滚
+             （0dp＋weight=1），两页签列表互斥显隐由 MusicActivity.renderSearchTabs 管辖。 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/singerResultsList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
+
+        <!-- 歌手签专属空态（歌曲签继续用 emptyText，两签空态互不借用）。 -->
+        <TextView
+            android:id="@+id/singerEmptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textColor="#FFF0E8DA"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/emptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textColor="#FFF0E8DA"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <ScrollView
+            android:id="@+id/homeScroll"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- 升级版52 第 5 条：推荐区标题行右侧加“更多”（同最近播放的更多样式）。 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingBottom="8dp"
+                    android:paddingTop="12dp"
+                    android:visibility="gone"
+                    android:id="@+id/recommendTitleRow">
+
+                    <TextView
+                        android:id="@+id/recommendTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/music_recommend"
+                        android:textColor="#FFFFFFFF"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/recommendMore"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:text="@string/music_more"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recommendGrid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/noticeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:textColor="#FFF0E8DA"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/miniPlayer"
+        layout="@layout/layout_music_mini_player" />
+</LinearLayout>

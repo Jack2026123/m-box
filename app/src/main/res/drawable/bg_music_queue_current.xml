@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 播放队列里正在播的那一行的浅底高亮（升级版51 第 8 条）：半透浅色衬底，不是深色底板。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <corners android:radius="12dp" />
+    <solid android:color="#2EF0E8DA" />
+</shape>

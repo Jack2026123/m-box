@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 3.34 网页源浏览器：从昏黄移植的令牌（仅 activity_browser.xml / bg_browser_play 用）。 -->
+<resources>
+    <color name="hh_accent">#FFCF9426</color>
+    <color name="hh_on_accent">#FF171A1F</color>
+    <dimen name="hh_space_1">4dp</dimen>
+    <dimen name="hh_space_3">12dp</dimen>
+    <dimen name="hh_space_4">16dp</dimen>
+    <dimen name="hh_touch">44dp</dimen>
+    <dimen name="hh_text_t1">18sp</dimen>
+    <dimen name="hh_text_t3">15sp</dimen>
+    <dimen name="hh_radius_pill">999dp</dimen>
+</resources>

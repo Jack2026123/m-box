@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- r470：浏览器模式网页源 —— 壳内自由浏览 + 广告过滤 + 网页播放转壳播放器。
+     结构参照 activity_tool_web.xml（标题栏/进度条/WebView），外层 FrameLayout 以承载右下角「原生播放」悬浮按钮。
+     r474 UI 评审落地：图标换矢量（ic_arrow_back/ic_action_refresh 防字体缺字）、标题对齐 hh_text_t1、
+     悬浮钮令牌化为暖金主操作胶囊（hh_accent/hh_on_accent + hh_radius_pill + 44dp 触达 + 涟漪），亮暗主题自适应。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- r477：工具栏背景跟随应用主题（ViewTheme.surfaceArgb），不用静态 @color/window_background。
+             应用是 Compose Material3 主题（AppThemeState），不是 Android night-mode，静态色值永远是浅色，
+             黑色主题下工具栏一直是白色，图标看不见。背景在 BrowserActivity 里按主题设置。 -->
+        <LinearLayout
+            android:id="@+id/browserToolbar"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/hh_space_1"
+            android:paddingEnd="@dimen/hh_space_1">
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/browserBack"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="10dp"
+                android:src="@drawable/ic_arrow_back"
+                app:tint="?android:attr/textColorPrimary" />
+
+            <TextView
+                android:id="@+id/browserTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="@dimen/hh_text_t1"
+                android:textStyle="bold" />
+
+            <!-- 3.70：放行开关（本站当普通浏览器用：静态拦截 + FILTER_JS + CLEAN_JS 全跳过，按站存态，默认关） -->
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/browserAiPass"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="放行"
+                android:padding="10dp"
+                android:src="@drawable/ic_check"
+                app:tint="?android:attr/textColorPrimary" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/browserAiProcess"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="记录"
+                android:padding="10dp"
+                android:src="@drawable/ic_filter"
+                app:tint="?android:attr/textColorPrimary" />
+
+            <!-- 3.68 B：真站（找发布页真入口直接跳），与记录开关并列 -->
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/browserAiFix"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="真站"
+                android:padding="10dp"
+                android:src="@drawable/ic_detail_switch_source"
+                app:tint="?android:attr/textColorPrimary" />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/browserReload"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="10dp"
+                android:src="@drawable/ic_action_refresh"
+                app:tint="?android:attr/textColorPrimary" />
+
+            <!-- 1.17 WebHome：网页源才显示；点一下切 HTML 首页，再点回原网页。 -->
+            <TextView
+                android:id="@+id/browserWebHome"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:gravity="center"
+                android:paddingStart="10dp"
+                android:paddingEnd="10dp"
+                android:text="HTML"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <ProgressBar
+            android:id="@+id/browserProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:max="100"
+            android:progressTint="?attr/colorPrimary"
+            android:visibility="gone" />
+
+        <WebView
+            android:id="@+id/browserWeb"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/browserPlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/hh_space_4"
+        android:background="@drawable/bg_browser_play"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:minHeight="@dimen/hh_touch"
+        android:paddingStart="@dimen/hh_space_4"
+        android:paddingTop="@dimen/hh_space_3"
+        android:paddingEnd="@dimen/hh_space_4"
+        android:paddingBottom="@dimen/hh_space_3"
+        android:text="▶ 原生播放"
+        android:textColor="@color/hh_on_accent"
+        android:textSize="@dimen/hh_text_t3"
+        android:textStyle="bold"
+        android:visibility="gone" />
+</FrameLayout>

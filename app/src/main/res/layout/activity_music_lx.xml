@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 洛雪音源页（升级版65）：一个洛雪源自己的天地——源名 + 搜索 + 五家平台分栏 + 该平台搜索结果（滚近底续页）。离开靠返回，底部通栏迷你播放条。
+     升级版66 第 4/7 条：文字颜色不在布局定死成主题色——布局值是经典口径，海报模式由 MusicLxActivity 经
+     MusicAvTheme/MusicButtonStyle/AvMusicHomeSpec 上妆覆盖；结果区为 3 列卡片网格（内距与源站分类页网格同为 4dp）。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/sourceName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:textColor="#FFFFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/searchInput"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_music_search"
+                android:gravity="center_vertical"
+                android:hint="@string/music_search_hint"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="0dp"
+                android:singleLine="true"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#B3F0E8DA"
+                android:textSize="14sp" />
+
+            <!-- 升级版68 第 6 件：搜索钮定宽保形。此钮的内边距只长在背景 drawable 上，
+                 MusicButtonStyle 换底（尤其海报分支换成无内边距的代码底）后 wrap_content
+                 只剩文字宽、再被输入框挤压就缩成竖条、文字竖排；定宽 64dp 后宽度与背景/
+                 内边距来源无关，输入框（weight=1）吃剩余宽度，与音乐首页搜索行同式。 -->
+            <TextView
+                android:id="@+id/searchBtn"
+                android:layout_width="64dp"
+                android:layout_height="40dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:singleLine="true"
+                android:text="@string/music_search"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/modeSong"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="@string/music_lx_mode_song"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/modeSinger"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_item_round"
+                android:gravity="center"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="@string/music_lx_mode_singer"
+                android:textColor="@color/selector_text"
+                android:textSize="13sp" />
+
+        </LinearLayout>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/platformChips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/resultsList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="4dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/homeList"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="4dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/emptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="16dp"
+            android:textColor="#FFF0E8DA"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/noticeText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:padding="10dp"
+            android:textColor="#FFF0E8DA"
+            android:textSize="13sp"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/miniPlayer"
+        layout="@layout/layout_music_mini_player" />
+</LinearLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black_20">#33000000</color>
+    <color name="black_40">#66000000</color>
+    <color name="black_90">#E6000000</color>
+    <color name="bg_remark">#80000000</color>
+    <color name="selector_item">#0D000000</color>
+    <color name="transparent">#00000000</color>
+    <color name="white">#FFFFFF</color>
+</resources>

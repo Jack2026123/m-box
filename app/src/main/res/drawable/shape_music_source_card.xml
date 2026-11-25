@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 升级版75甲段：源管理页三卡容器（经典底；海报模式由代码覆写为无快照版 AvGlassDrawable）。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#1AFFFFFF" />
+    <corners android:radius="16dp" />
+</shape>

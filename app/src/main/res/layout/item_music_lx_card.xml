@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 念心席页结果卡（升级版66 第 7 条）：与源站分类页共用卡面口径——竖版封面（宽高 3:4，居中裁剪，
+     Vod.Grid 圆角）、封面左下角标（曲目备注＝歌手名，复用点播角标底）、封面下方名称条（复用点播名称条底），
+     与 item_interface_music_card 逐项同值；仅多一枚喜欢钮：叠在封面右上角（深色圆形衬底保证任意封面上可辨），
+     图标与着色走 MusicTrackAdapter.markIcon 共用口径，显隐判定与歌行一致（单曲才出现）。 -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="@drawable/ripple_music_press"
+    android:padding="2dp">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/cardCover"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/black_20"
+        android:scaleType="centerCrop"
+        app:layout_constraintDimensionRatio="3:4"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/Vod.Grid" />
+
+    <TextView
+        android:id="@+id/cardRemark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_vod_remark"
+        android:singleLine="true"
+        android:textColor="@color/text_remark"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/cardCover"
+        app:layout_constraintStart_toStartOf="@id/cardCover" />
+
+    <ImageView
+        android:id="@+id/likeBtn"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_music_lx_like"
+        android:clickable="true"
+        android:contentDescription="@string/music_like"
+        android:focusable="true"
+        android:padding="8dp"
+        app:layout_constraintEnd_toEndOf="@id/cardCover"
+        app:layout_constraintTop_toTopOf="@id/cardCover" />
+
+    <TextView
+        android:id="@+id/cardName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_vod_name"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/white"
+        android:textSize="13sp"
+        app:layout_constraintEnd_toEndOf="@id/cardCover"
+        app:layout_constraintStart_toStartOf="@id/cardCover"
+        app:layout_constraintTop_toBottomOf="@id/cardCover" />
+</androidx.constraintlayout.widget.ConstraintLayout>
